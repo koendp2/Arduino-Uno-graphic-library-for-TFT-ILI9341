@@ -405,5 +405,7 @@
   uint8_t hi = (d) >> 8, lo = (d); \
   CD_COMMAND; write8(aH); CD_DATA; write8(hi); \
   CD_COMMAND; write8(aL); CD_DATA; write8(lo); }
+  
+  
 
 #endif // _pin_magic_

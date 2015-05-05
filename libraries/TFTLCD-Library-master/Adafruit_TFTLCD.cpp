@@ -112,7 +112,7 @@ void Adafruit_TFTLCD::init(void) {
 
   rotation  = 3;
   cursor_y  = cursor_x = 0;
-  textsize  = 1;
+  textSize  = 1;
   textcolor = 0x0000;
   _width    = TFTWIDTH;
   _height   = TFTHEIGHT;
@@ -144,16 +144,63 @@ void Adafruit_TFTLCD::begin(uint16_t id) {
     writeRegister16(ILI9341_VCOMCONTROL1, 0x2B2B);
     writeRegister8(ILI9341_VCOMCONTROL2, 0xC0);
     writeRegister8(ILI9341_MEMCONTROL, ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR);
-    writeRegister8(ILI9341_PIXELFORMAT, 0x55);
+    writeRegister8(ILI9341_PIXELFORMAT, 0x55); //was 55
     writeRegister16(ILI9341_FRAMECONTROL, 0x001B);
-    
-    writeRegister8(ILI9341_ENTRYMODE, 0x07);
-    /* writeRegister32(ILI9341_DISPLAYFUNC, 0x0A822700);*/
+ 
 
+     
+    writeRegister8(ILI9341_ENTRYMODE, 0x07);
+   
     writeRegister8(ILI9341_SLEEPOUT, 0);
     delay(150);
-    writeRegister8(ILI9341_DISPLAYON, 0);
+     writeRegister8(ILI9341_DISPLAYON, 0);
     delay(500);
+
+   //writeRegister8(ILI9341_GAMMASET, 1);
+    	//Gamma Set
+	//Positive Gamma Correction
+	CD_COMMAND;
+	write8(0xE1);
+	CD_DATA;  
+	write8(0x0F); 
+	write8(0x31); 
+	write8(0x2B); 
+	write8(0x0C); 
+	write8(0x0E); 
+	write8(0x08); 
+	write8(0x4E); 
+	write8(0xF1); 
+	write8(0x37); 
+	write8(0x07); 
+	write8(0x10); 
+	write8(0x03); 
+	write8(0x0E); 
+	write8(0x09); 
+	write8(0x00); 
+	CS_IDLE;
+ 
+	//Negative Gamma Correction
+	CD_COMMAND;
+	write8(0XE0); 
+	CD_DATA;
+	write8(0x00); 
+	write8(0x0E); 
+	write8(0x14); 
+	write8(0x03); 
+	write8(0x11); 
+	write8(0x07); 
+	write8(0x31); 
+	write8(0xC1); 
+	write8(0x48); 
+	write8(0x08); 
+	write8(0x0F); 
+	write8(0x0C); 
+	write8(0x31); 
+	write8(0x36); 
+	write8(0x0F);
+	CS_IDLE;
+     
+
     setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);
 }
 
@@ -266,8 +313,7 @@ void Adafruit_TFTLCD::flood(uint16_t color, uint32_t len) {
   CS_IDLE;
 }
 
-void Adafruit_TFTLCD::drawFastHLine(int16_t x, int16_t y, int16_t length,
-  uint16_t color)
+void Adafruit_TFTLCD::drawFastHLine(int16_t x, int16_t y, int16_t length)
 {
   int16_t x2;
 
@@ -286,13 +332,12 @@ void Adafruit_TFTLCD::drawFastHLine(int16_t x, int16_t y, int16_t length,
   }
 
   setAddrWindow(x, y, x2, y);
-  flood(color, length);
+  flood(drawcolor, length);
   if(driver == ID_932X) setAddrWindow(0, 0, _width - 1, _height - 1);
   else                  setLR();
 }
 
-void Adafruit_TFTLCD::drawFastVLine(int16_t x, int16_t y, int16_t length,
-  uint16_t color)
+void Adafruit_TFTLCD::drawFastVLine(int16_t x, int16_t y, int16_t length)
 {
   int16_t y2;
 
@@ -310,13 +355,13 @@ void Adafruit_TFTLCD::drawFastVLine(int16_t x, int16_t y, int16_t length,
   }
 
   setAddrWindow(x, y, x, y2);
-  flood(color, length);
+  flood(drawcolor, length);
   if(driver == ID_932X) setAddrWindow(0, 0, _width - 1, _height - 1);
   else                  setLR();
 }
 
-void Adafruit_TFTLCD::fillRect(int16_t x1, int16_t y1, int16_t w, int16_t h, 
-  uint16_t fillcolor) {
+
+void Adafruit_TFTLCD::fillRect(int16_t x1, int16_t y1, int16_t w, int16_t h) {
   int16_t  x2, y2;
 
   // Initial off-screen clipping
@@ -341,7 +386,7 @@ void Adafruit_TFTLCD::fillRect(int16_t x1, int16_t y1, int16_t w, int16_t h,
   }
 
   setAddrWindow(x1, y1, x2, y2);
-  flood(fillcolor, (uint32_t)w * (uint32_t)h);
+  flood(drawcolor, (uint32_t)w * (uint32_t)h);
   if(driver == ID_932X) setAddrWindow(0, 0, _width - 1, _height - 1);
   else                  setLR();
 }
@@ -356,7 +401,8 @@ void Adafruit_TFTLCD::fillScreen(uint16_t color) {
  flood(color, (long)TFTWIDTH * (long)TFTHEIGHT);
 }
 
-void Adafruit_TFTLCD::drawPixel(int16_t x, int16_t y, uint16_t color) {
+void Adafruit_TFTLCD::drawPixel(int16_t x, int16_t y) 
+{
 
   // Clip
   if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return;
@@ -368,7 +414,7 @@ void Adafruit_TFTLCD::drawPixel(int16_t x, int16_t y, uint16_t color) {
     CD_COMMAND; 
     write8(0x2C);
     CD_DATA; 
-    write8((color >> 8)^0xFF); write8(color^0xFF);
+    write8((drawcolor >> 8)^0xFF); write8(drawcolor^0xFF);
 
   CS_IDLE;
 }
@@ -575,10 +621,6 @@ uint32_t Adafruit_TFTLCD::readReg(uint8_t r) {
   return id;
 }
 
-// Pass 8-bit (each) R,G,B, get back 16-bit packed color
-uint16_t Adafruit_TFTLCD::color565(uint8_t r, uint8_t g, uint8_t b) {
-  return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-}
 
 // For I/O macros that were left undefined, declare function
 // versions that reference the inline macros just once:

@@ -44,7 +44,9 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 int16_t counter = 0;
- char naam[] = "Koen De Poorter\nMyriam De Wulf\nMusti";
+ unsigned char naam1 [] = "\n";
+ unsigned char naam2 [] = "Myriam De Wulf\n";
+ unsigned char naam3 [] = "Musti\n";
 
 
 void setup(void) {
@@ -55,13 +57,18 @@ void setup(void) {
   
   tft.begin(0x9341);
 
-  tft.fillScreen(GREEN);
+  tft.fillScreen(WHITE);
 
   tft.setRotation(1);
-  for(int16_t x = 0; x < 320; x++)
+  for(int16_t x = 0; x < 255; x++)
   {
-    
-    //tft.drawFastVLine(x,0,240, tft.color565(0, 0, x));
+    //Serial.println(tft.color565(0, 0, x));
+    //Serial.println(tft.color565(0, x, 0));
+    Serial.println(tft.color565(x, 0, 0));
+
+    tft.drawFastVLine(x,0,80, tft.color565(0, 0, x));
+    tft.drawFastVLine(x,80,80, tft.color565(0, x, 0));
+    tft.drawFastVLine(x,160,80, tft.color565(x, 0, 0));
     /*for (int16_t y = 0; y < 240; y++)
       tft.drawPixel(x,y, RED);  */
   }
@@ -70,22 +77,27 @@ void setup(void) {
 
 void loop()
 {
-  tft.setFont(CENTURY_8);
-  tft.setCursor(20,20 );
-  tft.setTextSize(2);
-  tft.setTextColor(CYAN);
 
   
-  if(counter < 10)
-  {
  // Serial.println(naam);
-  for(int i = 0; naam[i]>0; i++)
+  if(counter == 0)
   {
-   // Serial.println(naam[i]);
-    tft.write(naam[i]);
+  tft.setFont(CENTURY_8);
+  //tft.setCursor(20,20 );
+  for(int k=1; k < 3; k++)
+   { 
+  tft.setTextSize(k);
+  tft.setTextColor(YELLOW);
+  for(int i = 0; i < 5 ; i++)
+  {
+    tft.setFont(i);
+    for(int j = 'a'; j <= 'z'; j++)
+      tft.write(j);
+     tft.write('\n');
   }
- counter++;
   }
+  }
+  counter = 1;
  
   
 }
